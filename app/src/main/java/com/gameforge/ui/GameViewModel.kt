@@ -50,7 +50,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val htmlVersions: StateFlow<List<GameHtmlVersion>> = _htmlVersions.asStateFlow()
 
     private val _stateSnapshots = MutableStateFlow<List<GameStateSnapshot>>(emptyList())
-    val stateSnapshots: StateFlow<List<GameStateSnapshot>> = _snapshots.asStateFlow()
+    val stateSnapshots: StateFlow<List<GameStateSnapshot>> = _stateSnapshots.asStateFlow()
 
     // ── 자동 저장 ───────────────────────────────────────────────
 
