@@ -2,8 +2,10 @@ package com.gameforge.engine
 
 import android.content.Context
 import android.util.Log
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import org.mozilla.geckoview.AllowOrDeny
 import org.mozilla.geckoview.GeckoResult
 import org.mozilla.geckoview.GeckoRuntime
@@ -133,13 +135,40 @@ class GeckoEngine(private val context: Context) : BrowserEngine {
     override suspend fun evalJs(js: String): String {
         val session = this.session ?: return ""
 
+        // GeckoView 150 doesn't have a direct evaluate() API.
+        // Use loadUri("javascript:...") + prompt bridge pattern.
+        val id = "eval_${evalCounter++}"
+        val deferred = CompletableDeferred<String>()
+        pendingEvals[id] = deferred
+
+        // Wrap JS to return result via prompt
+        val wrappedJs = "try { var __r = (function(){ $js })(); " +
+            "window.prompt('__DC_EVAL__:$id:result:' + JSON.stringify(__r)); " +
+            "} catch(e) { " +
+            "window.prompt('__DC_EVAL__:$id:error:' + e.message); }"
+        session.loadUri("javascript:$wrappedJs")
+
         return try {
-            val result = session.evaluate(js)
-            result?.toString() ?: ""
+            withTimeout(5000L) { deferred.await() }
         } catch (e: Exception) {
-            Log.w("GeckoEngine", "evalJs error: ${e.message}")
+            pendingEvals.remove(id)
+            Log.w("GeckoEngine", "evalJs timeout: ${e.message}")
             ""
         }
+    }
+
+    /** Handle prompt from JavaScript evaluation bridge */
+    fun handlePrompt(promptText: String): Boolean {
+        if (!promptText.startsWith("__DC_EVAL__:")) return false
+        val parts = promptText.removePrefix("__DC_EVAL__:").split(":", limit = 3)
+        if (parts.size < 3) return false
+        val (id, type, data) = parts
+        val deferred = pendingEvals.remove(id) ?: return false
+        when (type) {
+            "result" -> deferred.complete(data)
+            "error" -> deferred.complete("")
+        }
+        return true
     }
 
     // ── 스크린샷 ────────────────────────────────────────────────
