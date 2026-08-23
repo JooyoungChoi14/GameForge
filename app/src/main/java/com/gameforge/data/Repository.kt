@@ -32,6 +32,7 @@ class GameRepository(private val db: GameForgeDatabase) {
             createdAt = System.currentTimeMillis(),
             lastPlayedAt = System.currentTimeMillis(),
             tags = tags.joinToString(","),
+            htmlSourceHash = "", // initial placeholder, updated when first HTML version is saved
         )
         gameDao.insert(game)
         return game

@@ -1,7 +1,7 @@
 package com.gameforge.llm
 
 import android.content.Context
-import com.gameforge.data.LlmProvider
+import com.gameforge.data.LlmProvider as LlmProviderEntity
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -14,7 +14,7 @@ class LlmManager(private val context: Context) {
     private val clients = mutableMapOf<String, OpenAiCompatibleClient>()
 
     /** 프로바이더 클라이언트 획득 (캐시) */
-    fun getClient(provider: LlmProvider): OpenAiCompatibleClient {
+    fun getClient(provider: LlmProviderEntity): OpenAiCompatibleClient {
         return clients.getOrPut(provider.id) {
             OpenAiCompatibleClient(
                 baseUrl = provider.baseUrl,
@@ -26,7 +26,7 @@ class LlmManager(private val context: Context) {
 
     /** 게임 생성 요청 */
     suspend fun generateGame(
-        provider: LlmProvider,
+        provider: LlmProviderEntity,
         existingGames: List<String>,
         genreHint: String? = null,
     ): String? {
@@ -56,7 +56,7 @@ class LlmManager(private val context: Context) {
 
     /** 게임 생성 스트리밍 */
     fun generateGameStream(
-        provider: LlmProvider,
+        provider: LlmProviderEntity,
         existingGames: List<String>,
         genreHint: String? = null,
     ): Flow<OpenAiCompatibleClient.StreamEvent> {
@@ -85,7 +85,7 @@ class LlmManager(private val context: Context) {
 
     /** 게임 제어 채팅 (Agent Loop) */
     suspend fun gameControlChat(
-        provider: LlmProvider,
+        provider: LlmProviderEntity,
         gameName: String,
         gameInfo: String,
         gameState: String,
@@ -125,7 +125,7 @@ class LlmManager(private val context: Context) {
     companion object {
         // 기본 프로바이더 설정
         val DEFAULT_PROVIDERS = listOf(
-            LlmProvider(
+            LlmProviderEntity(
                 id = "ollama",
                 name = "Ollama (Cloud)",
                 baseUrl = "https://ollama.com",
@@ -134,7 +134,7 @@ class LlmManager(private val context: Context) {
                 isEnabled = true,
                 sortOrder = 0,
             ),
-            LlmProvider(
+            LlmProviderEntity(
                 id = "openai",
                 name = "OpenAI",
                 baseUrl = "https://api.openai.com",
@@ -143,7 +143,7 @@ class LlmManager(private val context: Context) {
                 isEnabled = false,
                 sortOrder = 1,
             ),
-            LlmProvider(
+            LlmProviderEntity(
                 id = "anthropic",
                 name = "Anthropic",
                 baseUrl = "https://api.anthropic.com",
@@ -152,7 +152,7 @@ class LlmManager(private val context: Context) {
                 isEnabled = false,
                 sortOrder = 2,
             ),
-            LlmProvider(
+            LlmProviderEntity(
                 id = "gemini",
                 name = "Gemini",
                 baseUrl = "https://generativelanguage.googleapis.com",

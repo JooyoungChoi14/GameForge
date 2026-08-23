@@ -10,12 +10,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gameforge.data.LlmProvider
 import com.gameforge.engine.GeckoEngine
 import com.gameforge.llm.GameGenerationPipeline
 import com.gameforge.llm.LlmManager
 import com.gameforge.ui.theme.GameForgeTheme
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     private lateinit var engine: GeckoEngine
@@ -199,5 +201,3 @@ fun GameForgeApp(engine: GeckoEngine) {
         }
     }
 }
-
-private suspend fun kotlinx.coroutines.delay(timeMillis: Long) = kotlinx.coroutines.delay(timeMillis)

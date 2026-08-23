@@ -5,10 +5,13 @@ import android.graphics.Bitmap
 import android.util.Log
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import org.mozilla.geckoview.*
+import org.mozilla.geckoview.GeckoResult
+import org.mozilla.geckoview.GeckoRuntime
+import org.mozilla.geckoview.GeckoSession
+import org.mozilla.geckoview.WebExtension
 import java.io.ByteArrayOutputStream
+import java.net.URLEncoder
 
 /**
  * GeckoView 기반 BrowserEngine 구현.
@@ -55,7 +58,7 @@ class GeckoEngine(private val context: Context) : BrowserEngine {
             old.promptDelegate = null
         }
 
-        val newSession = GeckoSession(GeckoSession.Settings.Builder(rt)
+        val newSession = GeckoSession(GeckoSession.Settings.Builder()
             .usePrivateMode(false)
             .build())
 
@@ -81,7 +84,7 @@ class GeckoEngine(private val context: Context) : BrowserEngine {
         }
 
         newSession.navigationDelegate = object : GeckoSession.NavigationDelegate {
-            override fun onLocationChange(session: GeckoSession, url: String?, perms: MutableList<GeckoSession.PermissionDelegate.Permission>?) {
+            override fun onLocationChange(session: GeckoSession, url: String?) {
                 _currentUrl = url ?: "about:blank"
             }
             override fun onCanGoBack(session: GeckoSession, canGoBack: Boolean) {
@@ -96,12 +99,8 @@ class GeckoEngine(private val context: Context) : BrowserEngine {
         }
 
         newSession.promptDelegate = object : GeckoSession.PromptDelegate {
-            override fun onPrompt(session: GeckoSession, prompt: GeckoSession.PromptDelegate.Prompt): GeckoResult<GeckoSession.PromptDelegate.PromptResponse>? {
-                // Handle evalJs via prompt for game bridge
-                if (prompt is GeckoSession.PromptDelegate.AlertPrompt) {
-                    return GeckoResult.fromValue(prompt.dismiss())
-                }
-                return null
+            override fun onAlertPrompt(session: GeckoSession, prompt: GeckoSession.PromptDelegate.AlertPrompt): GeckoResult<GeckoSession.PromptDelegate.PromptResponse>? {
+                return GeckoResult.fromValue(prompt.dismiss())
             }
         }
 
@@ -125,7 +124,8 @@ class GeckoEngine(private val context: Context) : BrowserEngine {
     }
 
     override fun loadDataWithBaseURL(baseUrl: String?, data: String, mimeType: String, encoding: String, historyUrl: String?) {
-        session?.loadData(data.toByteArray(Charsets.UTF_8), mimeType)
+        val encodedData = URLEncoder.encode(data, "UTF-8")
+        session?.loadUri("data:$mimeType;charset=utf-8,$encodedData")
     }
 
     override fun goBack() { session?.goBack() }
@@ -160,7 +160,7 @@ class GeckoEngine(private val context: Context) : BrowserEngine {
 
     private suspend fun GeckoSession.evaluate(js: String): Any? {
         return withContext(Dispatchers.Main) {
-            val result = GeckoResult<String>()
+            val result = GeckoResult<Any>()
             this@evaluate.evaluate(js, result)
             try {
                 result.poll(5000) // 5s timeout
@@ -174,12 +174,12 @@ class GeckoEngine(private val context: Context) : BrowserEngine {
 
     override suspend fun screenshot(): ByteArray? {
         val session = this.session ?: return null
+        val rt = this.runtime ?: return null
         return withContext(Dispatchers.IO) {
             try {
-                val bitmap = withContext(Dispatchers.Main) {
-                    // Capture via GeckoView screenshot API
-                    val screenshot = session.screenshot()
-                    screenshot?.poll(3000)
+                val bitmap: Bitmap? = withContext(Dispatchers.Main) {
+                    val screenshotResult: GeckoResult<Bitmap> = session.screenshot(rt)
+                    screenshotResult.poll(3000)
                 }
                 bitmap?.let { bmp ->
                     val stream = ByteArrayOutputStream()

@@ -5,6 +5,7 @@ import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -55,8 +56,8 @@ fun DraggableChatOverlay(
                 color = MaterialTheme.colorScheme.surface,
                 tonalElevation = 4.dp,
                 shape = MaterialTheme.shapes.large.copy(
-                    bottomStart = androidx.compose.foundation.shape.ZeroSize,
-                    bottomEnd = androidx.compose.foundation.shape.ZeroSize,
+                    bottomStart = CornerSize(0.dp),
+                    bottomEnd = CornerSize(0.dp),
                 ),
             ) {
                 Column(modifier = Modifier.fillMaxSize()) {

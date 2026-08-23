@@ -1,6 +1,7 @@
 package com.gameforge.llm
 
 import com.gameforge.data.GameRepository
+import com.gameforge.data.LlmProvider as LlmProviderEntity
 import com.gameforge.engine.BrowserEngine
 import com.gameforge.data.GameHtmlVersion
 import com.gameforge.data.GameStateSnapshot
@@ -12,7 +13,7 @@ import com.gameforge.data.GameStateSnapshot
  */
 class GameAgentLoop(
     private val llmManager: LlmManager,
-    private val provider: com.gameforge.data.LlmProvider,
+    private val provider: LlmProviderEntity,
     private val repository: GameRepository,
     private val engine: BrowserEngine,
     private val gameId: String,
@@ -39,7 +40,7 @@ class GameAgentLoop(
         var stateChanged = false
         val responseBuilder = StringBuilder()
         var currentMessage = userMessage
-        var history = chatHistory.map { com.gameforge.LlmProvider.ChatMessage(
+        var history = chatHistory.map { LlmProvider.ChatMessage(
             role = it.role,
             content = it.content,
         ) }
@@ -91,11 +92,11 @@ class GameAgentLoop(
                         }
                     }
                     // tool 결과를 히스토리에 추가
-                    history = history + com.gameforge.LlmProvider.ChatMessage(
+                    history = history + LlmProvider.ChatMessage(
                         role = "assistant",
                         content = result.content ?: "",
                     )
-                    history = history + com.gameforge.LlmProvider.ChatMessage(
+                    history = history + LlmProvider.ChatMessage(
                         role = "tool",
                         content = toolResult,
                         toolCallId = toolCall.id,
@@ -204,7 +205,7 @@ class GameAgentLoop(
     }
 
     /** tool_call 실행 */
-    private suspend fun executeToolCall(toolCall: com.gameforge.LlmProvider.ToolCall): String {
+    private suspend fun executeToolCall(toolCall: LlmProvider.ToolCall): String {
         return when (toolCall.name) {
             "eval_js" -> {
                 try {
