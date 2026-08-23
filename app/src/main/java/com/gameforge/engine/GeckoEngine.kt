@@ -1,7 +1,6 @@
 package com.gameforge.engine
 
 import android.content.Context
-import android.graphics.Bitmap
 import android.util.Log
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -9,8 +8,8 @@ import kotlinx.coroutines.withContext
 import org.mozilla.geckoview.GeckoResult
 import org.mozilla.geckoview.GeckoRuntime
 import org.mozilla.geckoview.GeckoSession
+import org.mozilla.geckoview.GeckoSessionSettings
 import org.mozilla.geckoview.WebExtension
-import java.io.ByteArrayOutputStream
 import java.net.URLEncoder
 
 /**
@@ -58,7 +57,7 @@ class GeckoEngine(private val context: Context) : BrowserEngine {
             old.promptDelegate = null
         }
 
-        val newSession = GeckoSession(GeckoSession.Settings.Builder()
+        val newSession = GeckoSession(GeckoSessionSettings.Builder()
             .usePrivateMode(false)
             .build())
 
@@ -173,24 +172,9 @@ class GeckoEngine(private val context: Context) : BrowserEngine {
     // ── 스크린샷 ────────────────────────────────────────────────
 
     override suspend fun screenshot(): ByteArray? {
-        val session = this.session ?: return null
-        val rt = this.runtime ?: return null
-        return withContext(Dispatchers.IO) {
-            try {
-                val bitmap: Bitmap? = withContext(Dispatchers.Main) {
-                    val screenshotResult: GeckoResult<Bitmap> = session.screenshot(rt)
-                    screenshotResult.poll(3000)
-                }
-                bitmap?.let { bmp ->
-                    val stream = ByteArrayOutputStream()
-                    bmp.compress(Bitmap.CompressFormat.PNG, 80, stream)
-                    stream.toByteArray()
-                }
-            } catch (e: Exception) {
-                Log.w("GeckoEngine", "Screenshot failed: ${e.message}")
-                null
-            }
-        }
+        // TODO: Requires GeckoView widget reference for canvas-based screenshot
+        // See DevCompanion's GeckoEngine.screenshot() for reference implementation
+        return null
     }
 
     /** GeckoView 세션 획득 (UI에서 Compose 사용) */

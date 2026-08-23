@@ -10,7 +10,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gameforge.data.LlmProvider
 import com.gameforge.engine.GeckoEngine
@@ -56,6 +55,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GameForgeApp(engine: GeckoEngine) {
     val viewModel: GameViewModel = viewModel()
+    val coroutineScope = rememberCoroutineScope()
     val activeGames by viewModel.activeGames.collectAsState()
     val currentGame by viewModel.currentGame.collectAsState()
     val gameState by viewModel.gameState.collectAsState()
@@ -129,7 +129,7 @@ fun GameForgeApp(engine: GeckoEngine) {
                     onBack = { viewModel.deselectGame() },
                     onOpenChat = { viewModel.toggleChat() },
                     onSave = {
-                        viewModel.viewModelScope.launch {
+                        coroutineScope.launch {
                             viewModel.saveCurrentState(source = "manual", label = "수동 저장")
                         }
                     },
