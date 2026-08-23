@@ -32,6 +32,9 @@ class GeckoEngine(private val context: Context) : BrowserEngine {
 
     override val engineDetail: String = "150.0.20260511200624"
 
+    private val pendingEvals = mutableMapOf<String, CompletableDeferred<String>>()
+    private var evalCounter = 0
+
     // ── 생명주기 ────────────────────────────────────────────────
 
     override suspend fun initialize() {
