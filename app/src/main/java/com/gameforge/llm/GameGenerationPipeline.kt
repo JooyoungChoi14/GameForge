@@ -58,7 +58,7 @@ class GameGenerationPipeline(
                     Log.w(TAG, lastError!!)
                     if (attempt < maxRetries - 1) {
                         // 재시도 시 보안 위반 내용을 프롬프트에 포함
-                        continue
+                        return@repeat
                     }
                     return GenerationState.Error(lastError!!, false)
                 }

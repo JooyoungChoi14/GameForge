@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.gameforge.data.LlmProvider
 import com.gameforge.llm.LlmManager
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewGameDialog(
     providers: List<LlmProvider>,

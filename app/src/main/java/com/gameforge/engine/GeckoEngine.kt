@@ -2,14 +2,12 @@ package com.gameforge.engine
 
 import android.content.Context
 import android.util.Log
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.mozilla.geckoview.AllowOrDeny
 import org.mozilla.geckoview.GeckoResult
 import org.mozilla.geckoview.GeckoRuntime
 import org.mozilla.geckoview.GeckoSession
-import org.mozilla.geckoview.GeckoSessionSettings
-import org.mozilla.geckoview.WebExtension
 import java.net.URLEncoder
 
 /**
@@ -31,9 +29,6 @@ class GeckoEngine(private val context: Context) : BrowserEngine {
     override val canGoForward: Boolean get() = _canGoForward
 
     override val engineDetail: String = "150.0.20260511200624"
-
-    private val pendingEvals = mutableMapOf<String, CompletableDeferred<String>>()
-    private var evalCounter = 0
 
     // ── 생명주기 ────────────────────────────────────────────────
 
@@ -57,21 +52,11 @@ class GeckoEngine(private val context: Context) : BrowserEngine {
             old.promptDelegate = null
         }
 
-        val newSession = GeckoSession(GeckoSessionSettings.Builder()
-            .usePrivateMode(false)
-            .build())
+        val newSession = GeckoSession()
 
         newSession.contentDelegate = object : GeckoSession.ContentDelegate {
             override fun onTitleChange(session: GeckoSession, title: String?) {}
-            override fun onPreviewImage(session: GeckoSession, previewImageUrl: String?) {}
-            override fun onCrash(session: GeckoSession, crash: GeckoResult<GeckoSession>?) {}
-            override fun onFirstComposite(session: GeckoSession) {}
-            override fun onWebExtensionMessage(
-                session: GeckoSession,
-                extension: WebExtension?,
-                message: Any?,
-                sender: WebExtension.MessageSender?
-            ): GeckoResult<Any>? = null
+            override fun onFirstContentfulPaint(session: GeckoSession) {}
         }
 
         newSession.progressDelegate = object : GeckoSession.ProgressDelegate {
@@ -83,7 +68,12 @@ class GeckoEngine(private val context: Context) : BrowserEngine {
         }
 
         newSession.navigationDelegate = object : GeckoSession.NavigationDelegate {
-            override fun onLocationChange(session: GeckoSession, url: String?) {
+            override fun onLocationChange(
+                session: GeckoSession,
+                url: String?,
+                perms: List<GeckoSession.PermissionDelegate.ContentPermission>,
+                hasUserGesture: Boolean
+            ) {
                 _currentUrl = url ?: "about:blank"
             }
             override fun onCanGoBack(session: GeckoSession, canGoBack: Boolean) {
@@ -92,7 +82,7 @@ class GeckoEngine(private val context: Context) : BrowserEngine {
             override fun onCanGoForward(session: GeckoSession, canGoForward: Boolean) {
                 _canGoForward = canGoForward
             }
-            override fun onLoadRequest(session: GeckoSession, request: GeckoSession.NavigationDelegate.LoadRequest): GeckoResult<GeckoSession>? {
+            override fun onLoadRequest(session: GeckoSession, request: GeckoSession.NavigationDelegate.LoadRequest): GeckoResult<AllowOrDeny>? {
                 return null // allow all
             }
         }
@@ -142,30 +132,13 @@ class GeckoEngine(private val context: Context) : BrowserEngine {
 
     override suspend fun evalJs(js: String): String {
         val session = this.session ?: return ""
-        val id = "eval_${evalCounter++}"
-        val deferred = CompletableDeferred<String>()
-        pendingEvals[id] = deferred
 
-        try {
+        return try {
             val result = session.evaluate(js)
-            return result?.toString() ?: ""
+            result?.toString() ?: ""
         } catch (e: Exception) {
             Log.w("GeckoEngine", "evalJs error: ${e.message}")
-            return ""
-        } finally {
-            pendingEvals.remove(id)
-        }
-    }
-
-    private suspend fun GeckoSession.evaluate(js: String): Any? {
-        return withContext(Dispatchers.Main) {
-            val result = GeckoResult<Any>()
-            this@evaluate.evaluate(js, result)
-            try {
-                result.poll(5000) // 5s timeout
-            } catch (e: Exception) {
-                null
-            }
+            ""
         }
     }
 

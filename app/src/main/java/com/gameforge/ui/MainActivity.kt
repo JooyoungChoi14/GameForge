@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.lifecycle.lifecycleScope
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,6 +18,7 @@ import com.gameforge.llm.GameGenerationPipeline
 import com.gameforge.llm.LlmManager
 import com.gameforge.ui.theme.GameForgeTheme
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private lateinit var engine: GeckoEngine
@@ -38,12 +40,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
-        engine.pauseGame()
+        lifecycleScope.launch { engine.pauseGame() }
     }
 
     override fun onResume() {
         super.onResume()
-        engine.resumeGame()
+        lifecycleScope.launch { engine.resumeGame() }
     }
 
     override fun onDestroy() {
