@@ -22,6 +22,9 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Generate debug keystore
+        run: keytool -genkeypair -v -keystore app/debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname 'CN=Debug, O=GameForge, L=Seoul, ST=Seoul, C=KR'
+
       - name: Build Debug APK
         run: ./gradlew assembleDebug
 
