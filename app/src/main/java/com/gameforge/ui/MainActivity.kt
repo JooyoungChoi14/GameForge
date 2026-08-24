@@ -67,8 +67,8 @@ fun GameForgeApp(engine: GeckoEngine) {
     val error by viewModel.error.collectAsState()
     val generationState by viewModel.generationState.collectAsState()
     val activeProvider by viewModel.activeProvider.collectAsState()
-    val allProviders by viewModel.allProviders.collectAsState()
-    val providers by viewModel.providers.collectAsState()
+    val allProviders: List<com.gameforge.data.LlmProvider> by viewModel.allProviders.collectAsState()
+    val providers: List<com.gameforge.data.LlmProvider> by viewModel.providers.collectAsState()
 
     var isDeleteMode by remember { mutableStateOf(false) }
     var showNewGameDialog by remember { mutableStateOf(false) }
