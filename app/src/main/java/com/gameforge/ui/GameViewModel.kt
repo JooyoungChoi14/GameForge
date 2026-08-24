@@ -75,6 +75,19 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _activeProvider = MutableStateFlow<com.gameforge.data.LlmProvider?>(null)
     val activeProvider: StateFlow<com.gameforge.data.LlmProvider?> = _activeProvider.asStateFlow()
 
+    val providers: StateFlow<List<com.gameforge.data.LlmProvider>> = repo.getAllEnabled()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), LlmManager.DEFAULT_PROVIDERS)
+
+    fun updateProvider(provider: com.gameforge.data.LlmProvider) {
+        viewModelScope.launch {
+            repo.updateProvider(provider)
+            llmManager.invalidateClient(provider.id)
+            if (_activeProvider.value?.id == provider.id) {
+                _activeProvider.value = provider
+            }
+        }
+    }
+
     // ── 자동 저장 ───────────────────────────────────────────────
 
     private var autoSaveJob: Job? = null

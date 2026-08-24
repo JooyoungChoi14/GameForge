@@ -13,7 +13,7 @@ import androidx.room.RoomDatabase
         ChatMessage::class,
         LlmProvider::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 abstract class GameForgeDatabase : RoomDatabase() {

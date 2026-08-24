@@ -22,12 +22,29 @@ class OpenAiCompatibleClient(
     private val baseUrl: String,
     private val apiKey: String? = null,
     private val model: String,
+    private val providerType: String = "openai", // "openai" | "anthropic"
     private val client: OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(120, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
         .build(),
 ) {
+    /** Build authenticated request builder with provider-specific headers */
+    private fun Request.Builder.addAuthHeaders(): Request.Builder {
+        if (apiKey.isNullOrBlank()) return this
+        return when (providerType) {
+            "anthropic" -> {
+                header("x-api-key", apiKey)
+                    .header("anthropic-version", "2023-06-01")
+                    .header("content-type", "application/json")
+            }
+            else -> {
+                // OpenAI-compatible (Ollama, OpenAI, Gemini)
+                header("Authorization", "Bearer $apiKey")
+            }
+        }
+    }
+
     private val gson = Gson()
 
     data class Message(
@@ -90,10 +107,7 @@ class OpenAiCompatibleClient(
         val reqBuilder = Request.Builder()
             .url("${baseUrl.trimEnd('/')}/v1/chat/completions")
             .post(body)
-
-        if (!apiKey.isNullOrBlank()) {
-            reqBuilder.header("Authorization", "Bearer $apiKey")
-        }
+            .addAuthHeaders()
 
         val response = withContext(Dispatchers.IO) {
             client.newCall(reqBuilder.build()).execute()
@@ -185,10 +199,7 @@ class OpenAiCompatibleClient(
         val reqBuilder = Request.Builder()
             .url("${baseUrl.trimEnd('/')}/v1/chat/completions")
             .post(body)
-
-        if (!apiKey.isNullOrBlank()) {
-            reqBuilder.header("Authorization", "Bearer $apiKey")
-        }
+            .addAuthHeaders()
 
         val response = client.newCall(reqBuilder.build()).execute()
         val responseBody = response.body?.string() ?: return@withContext LlmProvider.ChatResult(null, null, null)

@@ -23,12 +23,16 @@ fun DashboardScreen(
     onDeleteGame: (String) -> Unit,
     isDeleteMode: Boolean,
     onToggleDeleteMode: () -> Unit,
+    onOpenSettings: () -> Unit = {},
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("🎮 GameForge") },
                 actions = {
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = "설정")
+                    }
                     IconButton(onClick = onToggleDeleteMode) {
                         Icon(
                             if (isDeleteMode) Icons.Default.Close else Icons.Default.Delete,

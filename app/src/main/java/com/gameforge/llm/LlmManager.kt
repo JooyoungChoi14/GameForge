@@ -20,8 +20,14 @@ class LlmManager(private val context: Context) {
                 baseUrl = provider.baseUrl,
                 apiKey = provider.apiKey,
                 model = provider.model,
+                providerType = provider.providerType,
             )
         }
+    }
+
+    /** 클라이언트 캐시 무효화 (프로바이더 설정 변경 시) */
+    fun invalidateClient(providerId: String) {
+        clients.remove(providerId)
     }
 
     /** 게임 생성 요청 */
@@ -131,6 +137,7 @@ class LlmManager(private val context: Context) {
                 baseUrl = "https://ollama.com",
                 apiKey = null,
                 model = "glm-5.1",
+                providerType = "openai",
                 isEnabled = true,
                 sortOrder = 0,
             ),
@@ -140,6 +147,7 @@ class LlmManager(private val context: Context) {
                 baseUrl = "https://api.openai.com",
                 apiKey = null, // 사용자 입력 필요
                 model = "gpt-4o",
+                providerType = "openai",
                 isEnabled = false,
                 sortOrder = 1,
             ),
@@ -149,6 +157,7 @@ class LlmManager(private val context: Context) {
                 baseUrl = "https://api.anthropic.com",
                 apiKey = null,
                 model = "claude-sonnet-4-20250514",
+                providerType = "anthropic",
                 isEnabled = false,
                 sortOrder = 2,
             ),
@@ -158,6 +167,7 @@ class LlmManager(private val context: Context) {
                 baseUrl = "https://generativelanguage.googleapis.com",
                 apiKey = null,
                 model = "gemini-2.5-flash",
+                providerType = "openai",
                 isEnabled = false,
                 sortOrder = 3,
             ),

@@ -96,6 +96,18 @@ class GeckoEngine(private val context: Context) : BrowserEngine {
             override fun onAlertPrompt(session: GeckoSession, prompt: GeckoSession.PromptDelegate.AlertPrompt): GeckoResult<GeckoSession.PromptDelegate.PromptResponse>? {
                 return GeckoResult.fromValue(prompt.dismiss())
             }
+
+            override fun onTextPrompt(session: GeckoSession, prompt: GeckoSession.PromptDelegate.TextPrompt): GeckoResult<GeckoSession.PromptDelegate.PromptResponse>? {
+                val promptText = prompt.message ?: ""
+                if (promptText.startsWith("__DC_EVAL__:")) {
+                    val handled = handlePrompt(promptText)
+                    if (handled) {
+                        return GeckoResult.fromValue(prompt.dismiss())
+                    }
+                }
+                // Default: dismiss with empty string
+                return GeckoResult.fromValue(prompt.dismiss(""))
+            }
         }
 
         newSession.open(rt)

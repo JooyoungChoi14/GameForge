@@ -107,6 +107,7 @@ data class LlmProvider(
     val baseUrl: String,
     val apiKey: String? = null,
     val model: String,
+    val providerType: String = "openai", // "openai" | "anthropic"
     val isEnabled: Boolean = true,
     val sortOrder: Int = 0,
 )

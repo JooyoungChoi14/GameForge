@@ -67,17 +67,20 @@ fun GameForgeApp(engine: GeckoEngine) {
     val error by viewModel.error.collectAsState()
     val generationState by viewModel.generationState.collectAsState()
     val activeProvider by viewModel.activeProvider.collectAsState()
+    val providers by viewModel.providers.collectAsState()
 
     var isDeleteMode by remember { mutableStateOf(false) }
     var showNewGameDialog by remember { mutableStateOf(false) }
     var chatFraction by remember { mutableFloatStateOf(0.7f) }
     var chatInput by remember { mutableStateOf("") }
+    var showSettings by remember { mutableStateOf(false) }
 
-    // 기본 프로바이더 설정
-    LaunchedEffect(Unit) {
+    // 기본 프로바이더 설정 (DB에서 로드된 providers 우선)
+    LaunchedEffect(providers) {
         if (activeProvider == null) {
-            LlmManager.DEFAULT_PROVIDERS.firstOrNull { it.isEnabled }?.let {
-                viewModel.setActiveProvider(it)
+            val enabled = providers.firstOrNull { it.isEnabled }
+            if (enabled != null) {
+                viewModel.setActiveProvider(enabled)
             }
         }
     }
@@ -95,7 +98,16 @@ fun GameForgeApp(engine: GeckoEngine) {
         }
     }
 
-    when {
+    // 프로바이더 설정 화면
+    if (showSettings) {
+        ProviderSettingsScreen(
+            providers = providers,
+            onUpdateProvider = { updated ->
+                viewModel.updateProvider(updated)
+            },
+            onBack = { showSettings = false },
+        )
+    } else when {
         // 게임 생성 중
         isGenerating -> {
             Box(
@@ -176,6 +188,7 @@ fun GameForgeApp(engine: GeckoEngine) {
                 onDeleteGame = { id -> viewModel.deleteGame(id) },
                 isDeleteMode = isDeleteMode,
                 onToggleDeleteMode = { isDeleteMode = !isDeleteMode },
+                onOpenSettings = { showSettings = true },
             )
         }
     }
@@ -183,7 +196,7 @@ fun GameForgeApp(engine: GeckoEngine) {
     // 새 게임 다이얼로그
     if (showNewGameDialog) {
         NewGameDialog(
-            providers = LlmManager.DEFAULT_PROVIDERS,
+            providers = providers.filter { it.isEnabled },
             onDismiss = { showNewGameDialog = false },
             onGenerate = { provider, genreHint ->
                 showNewGameDialog = false

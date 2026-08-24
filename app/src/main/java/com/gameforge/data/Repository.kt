@@ -22,6 +22,12 @@ class GameRepository(private val db: GameForgeDatabase) {
     fun getAllActive(): Flow<List<GameEntry>> = gameDao.getAllActive()
     fun getAllTrashed(): Flow<List<GameEntry>> = gameDao.getAllTrashed()
 
+    // ── LLM Provider ──────────────────────────────────────────
+
+    fun getAllEnabled(): Flow<List<LlmProvider>> = db.llmProviderDao().getAllEnabled()
+
+    suspend fun updateProvider(provider: LlmProvider) = db.llmProviderDao().update(provider)
+
     suspend fun getGame(id: String): GameEntry? = gameDao.getById(id)
 
     suspend fun createGame(name: String, emoji: String, tags: List<String> = emptyList()): GameEntry {
