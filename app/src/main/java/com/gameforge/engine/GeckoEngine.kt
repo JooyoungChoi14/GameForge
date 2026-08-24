@@ -105,8 +105,8 @@ class GeckoEngine(private val context: Context) : BrowserEngine {
                         return GeckoResult.fromValue(prompt.dismiss())
                     }
                 }
-                // Default: dismiss with empty string
-                return GeckoResult.fromValue(prompt.dismiss(""))
+                // Default: dismiss
+                return GeckoResult.fromValue(prompt.dismiss())
             }
         }
 

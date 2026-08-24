@@ -248,7 +248,7 @@ private fun ProviderEditor(
         }
 
         // 변경 안내
-        if (!hasUnsavedChanges && provider.id == selectedProvider?.id) {
+        if (!hasUnsavedChanges) {
             Text(
                 "변경사항이 없습니다",
                 style = MaterialTheme.typography.bodySmall,
