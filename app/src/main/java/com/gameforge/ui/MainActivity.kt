@@ -25,7 +25,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        // enableEdgeToEdge() causes TopAppBar to be hidden behind system bars
+        // on some devices. Removed until proper insets handling is implemented.
+        // enableEdgeToEdge()
 
         engine = GeckoEngine(this)
 
