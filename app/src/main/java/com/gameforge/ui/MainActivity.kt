@@ -67,6 +67,7 @@ fun GameForgeApp(engine: GeckoEngine) {
     val error by viewModel.error.collectAsState()
     val generationState by viewModel.generationState.collectAsState()
     val activeProvider by viewModel.activeProvider.collectAsState()
+    val allProviders by viewModel.allProviders.collectAsState()
     val providers by viewModel.providers.collectAsState()
 
     var isDeleteMode by remember { mutableStateOf(false) }
@@ -101,7 +102,7 @@ fun GameForgeApp(engine: GeckoEngine) {
     // 프로바이더 설정 화면
     if (showSettings) {
         ProviderSettingsScreen(
-            providers = providers,
+            providers = allProviders,
             onUpdateProvider = { updated ->
                 viewModel.updateProvider(updated)
             },

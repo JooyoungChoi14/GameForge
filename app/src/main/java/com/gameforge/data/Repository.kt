@@ -25,6 +25,7 @@ class GameRepository(private val db: GameForgeDatabase) {
     // ── LLM Provider ──────────────────────────────────────────
 
     fun getAllEnabled(): Flow<List<LlmProvider>> = db.llmProviderDao().getAllEnabled()
+    fun getAllProviders(): Flow<List<LlmProvider>> = db.llmProviderDao().getAll()
 
     suspend fun updateProvider(provider: LlmProvider) = db.llmProviderDao().update(provider)
 

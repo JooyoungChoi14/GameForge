@@ -117,6 +117,9 @@ interface ChatMessageDao {
 @Dao
 interface LlmProviderDao {
 
+    @Query("SELECT * FROM llm_providers ORDER BY sortOrder")
+    fun getAll(): Flow<List<LlmProvider>>
+
     @Query("SELECT * FROM llm_providers WHERE isEnabled = 1 ORDER BY sortOrder")
     fun getAllEnabled(): Flow<List<LlmProvider>>
 

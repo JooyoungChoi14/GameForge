@@ -75,6 +75,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _activeProvider = MutableStateFlow<com.gameforge.data.LlmProvider?>(null)
     val activeProvider: StateFlow<com.gameforge.data.LlmProvider?> = _activeProvider.asStateFlow()
 
+    val allProviders: StateFlow<List<com.gameforge.data.LlmProvider>> = repo.getAllProviders()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val providers: StateFlow<List<com.gameforge.data.LlmProvider>> = repo.getAllEnabled()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     val providers: StateFlow<List<com.gameforge.data.LlmProvider>> = repo.getAllEnabled()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), LlmManager.DEFAULT_PROVIDERS)
 
