@@ -89,8 +89,10 @@ fun GameForgeApp(engine: GeckoEngine) {
     }
 
     // 엔진 초기화
+    var isEngineReady by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         engine.initialize()
+        isEngineReady = true
     }
 
     // 에러 자동 클리어
@@ -137,7 +139,7 @@ fun GameForgeApp(engine: GeckoEngine) {
         }
 
         // 게임 플레이 화면
-        currentGame != null -> {
+        currentGame != null && isEngineReady -> {
             Box(modifier = Modifier.fillMaxSize()) {
                 GamePlayScreen(
                     game = currentGame!!,
@@ -182,17 +184,30 @@ fun GameForgeApp(engine: GeckoEngine) {
 
         // 대시보드
         else -> {
-            DashboardScreen(
-                games = activeGames,
-                onNewGame = { showNewGameDialog = true },
-                onSelectGame = { game ->
-                    viewModel.selectGame(game, engine)
-                },
-                onDeleteGame = { id -> viewModel.deleteGame(id) },
-                isDeleteMode = isDeleteMode,
-                onToggleDeleteMode = { isDeleteMode = !isDeleteMode },
-                onOpenSettings = { showSettings = true },
-            )
+            if (!isEngineReady) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(modifier = Modifier.size(48.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("엔진 초기화 중…", style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
+            } else {
+                DashboardScreen(
+                    games = activeGames,
+                    onNewGame = { showNewGameDialog = true },
+                    onSelectGame = { game ->
+                        viewModel.selectGame(game, engine)
+                    },
+                    onDeleteGame = { id -> viewModel.deleteGame(id) },
+                    isDeleteMode = isDeleteMode,
+                    onToggleDeleteMode = { isDeleteMode = !isDeleteMode },
+                    onOpenSettings = { showSettings = true },
+                )
+            }
         }
     }
 

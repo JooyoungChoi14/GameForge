@@ -40,9 +40,14 @@ class GeckoEngine(private val context: Context) : BrowserEngine {
     override suspend fun initialize() {
         withContext(Dispatchers.Main) {
             if (runtime == null) {
-                runtime = GeckoRuntime.create(context)
+                val builder = GeckoRuntime.Settings.Builder()
+                    .crashHandler(null) // 기본 크래시 핸들러 비활성화
+                    .aboutConfigEnabled(false)
+                runtime = GeckoRuntime.create(context, builder.build())
             }
             createSession()
+            // 초기 페이지 로드 — about:blank로 세션을 활성화
+            session?.loadUri("about:blank")
         }
     }
 
@@ -111,6 +116,8 @@ class GeckoEngine(private val context: Context) : BrowserEngine {
         }
 
         newSession.open(rt)
+        // 세션 활성화 대기 — progressDelegate가 onPageStop을 받을 때까지
+        // Compose가 AndroidView에 바인딩되기 전에 세션이 ready 상태여야 함
         session = newSession
     }
 
