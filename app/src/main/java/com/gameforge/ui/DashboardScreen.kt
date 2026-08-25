@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gameforge.data.GameEntry
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     games: List<GameEntry>,
@@ -25,67 +24,89 @@ fun DashboardScreen(
     onToggleDeleteMode: () -> Unit,
     onOpenSettings: () -> Unit = {},
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("🎮 GameForge") },
-                actions = {
-                    IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "설정")
-                    }
-                    IconButton(onClick = onToggleDeleteMode) {
-                        Icon(
-                            if (isDeleteMode) Icons.Default.Close else Icons.Default.Delete,
-                            contentDescription = if (isDeleteMode) "삭제 모드 종료" else "삭제 모드"
-                        )
-                    }
-                    IconButton(onClick = onNewGame) {
-                        Icon(Icons.Default.Add, contentDescription = "새 게임")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    actionIconContentColor = MaterialTheme.colorScheme.onSurface,
-                ),
-            )
-        }
-    ) { padding ->
+    Box(modifier = Modifier.fillMaxSize()) {
         if (games.isEmpty()) {
-            // 빈 상태
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center,
+            // 빈 상태 — 세 개 버튼을 중앙에 배치
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        "아직 게임이 없습니다",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        "+ 버튼을 눌러 새 게임을 만드세요",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    )
+                Text(
+                    "🎮 GameForge",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    "아직 게임이 없습니다",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.height(32.dp))
+                Button(
+                    onClick = onNewGame,
+                    modifier = Modifier.fillMaxWidth(0.6f),
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("새 게임 만들기")
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedButton(
+                    onClick = onOpenSettings,
+                    modifier = Modifier.fillMaxWidth(0.6f),
+                ) {
+                    Icon(Icons.Default.Settings, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("프로바이더 설정")
                 }
             }
         } else {
-            LazyColumn(
-                modifier = Modifier.padding(padding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                items(games, key = { it.id }) { game ->
-                    GameCard(
-                        game = game,
-                        onClick = { onSelectGame(game) },
-                        onDelete = { onDeleteGame(game.id) },
-                        isDeleteMode = isDeleteMode,
-                    )
+            // 게임 목록 — 상단에 액션 버튼 행
+            Column(modifier = Modifier.fillMaxSize()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = "설정")
+                    }
+                    if (isDeleteMode) {
+                        Button(onClick = onToggleDeleteMode) {
+                            Icon(Icons.Default.Close, contentDescription = null)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("완료")
+                        }
+                    } else {
+                        OutlinedButton(onClick = onToggleDeleteMode) {
+                            Icon(Icons.Default.Delete, contentDescription = null)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("삭제")
+                        }
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    Button(onClick = onNewGame) {
+                        Icon(Icons.Default.Add, contentDescription = null)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("새 게임")
+                    }
+                }
+
+                LazyColumn(
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(games, key = { it.id }) { game ->
+                        GameCard(
+                            game = game,
+                            onClick = { onSelectGame(game) },
+                            onDelete = { onDeleteGame(game.id) },
+                            isDeleteMode = isDeleteMode,
+                        )
+                    }
                 }
             }
         }
