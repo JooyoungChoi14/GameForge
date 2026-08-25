@@ -40,10 +40,7 @@ class GeckoEngine(private val context: Context) : BrowserEngine {
     override suspend fun initialize() {
         withContext(Dispatchers.Main) {
             if (runtime == null) {
-                val builder = GeckoRuntime.Settings.Builder()
-                    .crashHandler(null) // 기본 크래시 핸들러 비활성화
-                    .aboutConfigEnabled(false)
-                runtime = GeckoRuntime.create(context, builder.build())
+                runtime = GeckoRuntime.create(context)
             }
             createSession()
             // 초기 페이지 로드 — about:blank로 세션을 활성화
