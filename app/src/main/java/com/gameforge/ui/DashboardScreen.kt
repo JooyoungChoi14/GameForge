@@ -31,22 +31,22 @@ fun DashboardScreen(
                 title = { Text("🎮 GameForge") },
                 actions = {
                     IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "설정", tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                        Icon(Icons.Default.Settings, contentDescription = "설정")
                     }
                     IconButton(onClick = onToggleDeleteMode) {
                         Icon(
                             if (isDeleteMode) Icons.Default.Close else Icons.Default.Delete,
-                            contentDescription = if (isDeleteMode) "삭제 모드 종료" else "삭제 모드",
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            contentDescription = if (isDeleteMode) "삭제 모드 종료" else "삭제 모드"
                         )
                     }
                     IconButton(onClick = onNewGame) {
-                        Icon(Icons.Default.Add, contentDescription = "새 게임", tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                        Icon(Icons.Default.Add, contentDescription = "새 게임")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
             )
         }
